@@ -57,6 +57,8 @@ using ::aidl::android::hardware::power::Mode;
 bool isDeviceSpecificModeSupported(Mode type, bool* _aidl_return) {
     switch (type) {
         case Mode::DOUBLE_TAP_TO_WAKE:
+        case Mode::GAME:
+        case Mode::SUSTAINED_PERFORMANCE:
             *_aidl_return = true;
             return true;
         default:
@@ -79,6 +81,11 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
             ev.value = enabled ? kInputEventWakeupModeOn : kInputEventWakeupModeOff;
             write(fd, &ev, sizeof(ev));
             close(fd);
+            return true;
+        }
+        case Mode::GAME:
+        case Mode::SUSTAINED_PERFORMANCE: {
+            ::android::base::WriteStringToFile(enabled ? "10" : "0", "/sys/class/thermal/thermal_message/sconfig");
             return true;
         }
         default:
